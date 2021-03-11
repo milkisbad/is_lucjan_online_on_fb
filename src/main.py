@@ -5,12 +5,16 @@ import csv
 import getpass
 import os
 import time
+import json
 
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+
+SLEEP = 10  # in seconds
+IMPLICIT_WAIT = 20  # in seconds
 
 # Enable tab completion for raw input.
 try:
@@ -26,52 +30,32 @@ except NameError:
   pass
 
 def main():
+  # load config
+  config = json.load(open('./config.json'))
+  print(config)
   # Prompt user for Facebook credentials.
   print('\nFacebook Online Friend Tracker starting...')
   facebook_username = input('Facebook username: ')
   facebook_password = getpass.getpass('Facebook password: ')
 
-  # Prompt user for script interval time and convert to seconds.
-  while True:
-    interval_time = int(input('How often would you like to check how many friends are online? Enter a number between 5 and 30 minutes: '), 10)
-    if 5 <= interval_time <= 30:
-      break
-    else:
-      print('The number you entered was not between 5 and 30.')
+  interval_time = config['interval_time']
+  print(f"interval_time {interval_time} minutes")
   interval_time = interval_time * 60
 
-  # Prompt user for total run time and convert to seconds.
-  while True:
-    total_time = int(input('How long would you like to run this tool for? Enter a number between 1 and 720 hours: '), 10)
-    if 1 <= total_time <= 720:
-      break
-    else:
-      print('The number you entered was not between 1 and 720.')
-  total_time = total_time * 3600
-
   # Prompt for the CSV file path and verify that the CSV file exists before scraping.
-  path_to_csv_file = input('Path to the CSV file: ')
+  path_to_csv_file = config['path_to_csv_file']
   print('Verifying that the CSV file exists...')
   if os.path.exists(path_to_csv_file):
     print(path_to_csv_file + ' has been found.')
   else:
-    print('[WARNING] ' + path_to_csv_file + ' does not exist. Creating a new CSV file now...')
-    path_to_csv_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'facebook_online_friend_tracker_data.csv')
-    with open(path_to_csv_file, 'w') as f:
-      writer = csv.writer(f, lineterminator='\n')
-      writer.writerow(['Timestamp', 'Number of Online Friends'])
-      print('New CSV file created at: ' + path_to_csv_file)
-
-  # Compute total number of iterations and initialize iteration counter.
-  number_of_iterations = total_time / interval_time
-  iteration = 0
+    raise Exception(f'Cannot find csv file at {path_to_csv_file}')
 
   # Initialize Chrome WebDriver.
   print('\nInitializing Chrome WebDriver...')
   driver = webdriver.Chrome()
 
   # Change default timeout and window size.
-  driver.implicitly_wait(120)
+  driver.implicitly_wait(IMPLICIT_WAIT)
   driver.set_window_size(700, 500)
 
   # Go to www.facebook.com and log in using the provided credentials.
@@ -83,21 +67,27 @@ def main():
   passwordBox.send_keys(facebook_password)
 
   wait = WebDriverWait(driver, 10)
-  wait.until(EC.element_to_be_clickable((By.ID, 'loginbutton'))).click()
-  # driver.find_element_by_id('loginbutton').click()
+  wait.until(EC.element_to_be_clickable((By.XPATH, "//*[text()='Accept All']"))).click()
+  wait1 = WebDriverWait(driver, 10)
+  wait1.until(EC.element_to_be_clickable((By.XPATH, "//button"))).click()
 
-  while iteration < number_of_iterations:
+  while True:
     # Wait for Facebook to update the number of online friends.
-    print('\nWaiting for Facebook to update friends list... (This takes approximately 3 minutes.)')
-    time.sleep(180)
+    print(f'\nat astart of iteration, sleeping {SLEEP} seconds')
+    time.sleep(SLEEP)
 
-    # Scrape the number of online friends.
-    onlineFriendsCount = driver.find_element_by_xpath('//*[@id="fbDockChatBuddylistNub"]/a/span[2]/span').text.strip('()')
-    if onlineFriendsCount:
-      onlineFriendsCount = int(onlineFriendsCount)
-    else:
-      onlineFriendsCount = 0
-    print('Done! Detected ' + str(onlineFriendsCount) + ' online friends.')
+    # Scrape if online
+    found_online = 0
+    print('checking if online')
+    try:
+      is_online = driver.find_element_by_xpath("// *[text() = 'Lucjan Dybczak'] /../../../../../../ div / div / div / div / div / span")
+      print('checked')
+      if is_online:
+        is_online = 1
+        found_online = 1
+    except:
+      is_online = 0
+    print('Done! Detected ' + str(is_online))
 
     # Get current time.
     today = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
@@ -105,12 +95,8 @@ def main():
     # Append row to the CSV file.
     with open(path_to_csv_file, 'a') as f:
       writer = csv.writer(f, lineterminator='\n')
-      writer.writerow([today, onlineFriendsCount])
-      print('Added: ' + today + ' -> ' + str(onlineFriendsCount) + ' to the spreadsheet.')
+      writer.writerow([today, is_online])
+      print('Added: ' + today + ' -> ' + str(is_online) + ' to the spreadsheet.')
 
     # Wait for next interval and increment iteration counter.
-    time.sleep(interval_time - 180)
-    iteration += 1
-
-  # Close Chrome WebDriver.
-  driver.quit()
+    time.sleep(interval_time - SLEEP - (1-found_online)*IMPLICIT_WAIT)
