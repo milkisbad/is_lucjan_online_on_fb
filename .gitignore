@@ -6,3 +6,5 @@ __pycache__
 MANIFEST
 dist/
 build/
+data/
+*config.json
