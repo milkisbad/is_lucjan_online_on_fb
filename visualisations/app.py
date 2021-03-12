@@ -23,7 +23,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.read_csv('../data/data.csv', names=['date','is_online'],  parse_dates=[0])
+df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
 # df = pd.DataFrame({
 #     "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
 #     "Amount": [4, 1, 2, 2, 4, 5],
