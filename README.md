@@ -20,7 +20,7 @@ How to Setup
 2. Install  
  + ``chromium-webdriver`` from here https://chromedriver.chromium.org/downloads  
  + ``pip install selenium``  
- + run from repo base directory ``python
+ + run from repo base directory ``
   python3 setup.py install
   ``  
 3. The command to run the script (from base repo directory) is: ``facebook-online-friend-tracker``
