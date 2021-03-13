@@ -17,6 +17,9 @@ def wakeup(df):
             break
     return 'not on fb today, smart boi'
 
+def time_online(df):
+    return "Online today for " + (pd.Timedelta(f'{df["is_online"].sum()}m')+ pd.Timestamp("00:00:00")).strftime("%H:%M") + " hours total"
+
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -24,23 +27,24 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
 df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
-# df = pd.DataFrame({
-#     "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-#     "Amount": [4, 1, 2, 2, 4, 5],
-#     "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-# })
 
-# fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
+start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
+today_df = df[df['date']>start_of_today]
+
 fig = px.line(df, x="date", y="is_online", hover_name="date", render_mode="svg")
 pie = px.pie(df, names='is_online', title='Percentage of time online')
 
-start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
-wakeup_today = wakeup(df[df['date']>start_of_today])
+wakeup_today = wakeup(today_df)
+time_online_today = time_online(today_df)
 
 app.layout = html.Div(children=[
     html.H1(children='Is Lucjan online?', style={'textAlign': 'center'}),
 
     html.Div(children=f'{wakeup_today}', style={
+        'textAlign': 'center'
+    }),
+
+    html.Div(children=f'{time_online_today}', style={
         'textAlign': 'center'
     }),
 
