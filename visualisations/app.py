@@ -9,6 +9,12 @@ import dash_html_components as html
 import plotly.express as px
 import pandas as pd
 import datetime
+import json
+import mariadb
+
+def load_db_credentials(json_path='db_credentails.json'):
+    with open('db_credentials.json') as f:
+        return json.load(f)
 
 def wakeup(df):
     for _, row in df.iterrows():
@@ -26,7 +32,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
+db_credentials = load_db_credentials()
+
+conn = mariadb.connect(**db_credentials)
+df = pd.read_sql("SELECT * FROM lucjan_data_bakap", conn)
+
+# df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
 
 start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
 today_df = df[df['date']>start_of_today]
