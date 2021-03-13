@@ -35,7 +35,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 db_credentials = load_db_credentials()
 
 conn = mariadb.connect(**db_credentials)
-df = pd.read_sql("SELECT * FROM lucjan_data_bakap", conn)
+df = pd.read_sql("SELECT * FROM lucjan_data", conn)
 
 # df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
 
