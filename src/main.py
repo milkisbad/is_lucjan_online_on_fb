@@ -80,7 +80,8 @@ def main():
     found_online = 0
     print('checking if online')
     try:
-      is_online = driver.find_element_by_xpath("// *[text() = 'Lucjan Dybczak'] /../../../../../../ div / div / div / div / div / span")
+      # is_online = driver.find_element_by_xpath("// *[text() = 'Lucjan Dybczak'] /../../../../../../ div / div / div / div / div / span")
+      is_online = driver.find_element_by_xpath('//*[text()="Lucjan Dybczak"]//..//..//..//..//..//..//span[contains(@class, "pq6dq46d jllm4f4h qu0x051f esr5mh6w e9989ue4 r7d6kgcz s45kfl79 emlxlaya bkmhp75w spb7xbtv t6na6p9t c9rrlmt1")]')
       print('checked')
       if is_online:
         is_online = 1
