@@ -6,6 +6,8 @@ import getpass
 import os
 import time
 import json
+import mariadb
+import datetime
 
 from datetime import datetime
 from selenium import webdriver
@@ -15,6 +17,17 @@ from selenium.webdriver.common.by import By
 
 SLEEP = 10  # in seconds
 IMPLICIT_WAIT = 20  # in seconds
+
+
+print('start')
+conn = mariadb.connect(
+    user="patryk",
+    password="root",
+    host="localhost",
+    database="is_lucjan_online_database")
+conn.autocommit = True
+
+cur = conn.cursor()
 
 # Enable tab completion for raw input.
 try:
@@ -43,12 +56,12 @@ def main():
   interval_time = interval_time * 60
 
   # Prompt for the CSV file path and verify that the CSV file exists before scraping.
-  path_to_csv_file = config['path_to_csv_file']
-  print('Verifying that the CSV file exists...')
-  if os.path.exists(path_to_csv_file):
-    print(path_to_csv_file + ' has been found.')
-  else:
-    raise Exception(f'Cannot find csv file at {path_to_csv_file}')
+  #path_to_csv_file = config['path_to_csv_file']
+  #print('Verifying that the CSV file exists...')
+  #if os.path.exists(path_to_csv_file):
+  #  print(path_to_csv_file + ' has been found.')
+  #else:
+  #  raise Exception(f'Cannot find csv file at {path_to_csv_file}')
 
   # Initialize Chrome WebDriver.
   print('\nInitializing Chrome WebDriver...')
@@ -91,13 +104,18 @@ def main():
     print('Done! Detected ' + str(is_online))
 
     # Get current time.
-    today = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    today = datetime.now()
 
+    try:
+      cur.execute("INSERT INTO lucjan_data (date, is_online) VALUES (?, ?)", (today, is_online))
+      print(f"added ({today}, {is_online}")
+    except mariadb.Error as e:
+      print(f"Error: {e}")
     # Append row to the CSV file.
-    with open(path_to_csv_file, 'a') as f:
-      writer = csv.writer(f, lineterminator='\n')
-      writer.writerow([today, is_online])
-      print('Added: ' + today + ' -> ' + str(is_online) + ' to the spreadsheet.')
+    # with open(path_to_csv_file, 'a') as f:
+    #   writer = csv.writer(f, lineterminator='\n')
+    #   writer.writerow([today, is_online])
+    #   print('Added: ' + today + ' -> ' + str(is_online) + ' to the spreadsheet.')
 
     # Wait for next interval and increment iteration counter.
     time.sleep(interval_time - SLEEP - (1-found_online)*IMPLICIT_WAIT)

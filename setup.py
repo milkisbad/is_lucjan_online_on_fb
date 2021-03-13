@@ -4,7 +4,7 @@ setup(
   name='facebook-online-friend-tracker',
   version='2.0.1',
   description='This tool tracks the number of online friends a user has on Facebook at any given time.',
-  long_description=open('README.rst').read(),
+  long_description=open('README.md').read(),
   url='https://github.com/bhamodi/facebook-online-friend-tracker',
   author='Baraa Hamodi',
   author_email='bhamodi@edu.uwaterloo.ca',
