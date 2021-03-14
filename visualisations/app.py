@@ -30,14 +30,10 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-# assume you have a "long-form" data frame
-# see https://plotly.com/python/px-arguments/ for more options
 db_credentials = load_db_credentials()
 
 conn = mariadb.connect(**db_credentials)
 df = pd.read_sql("SELECT * FROM lucjan_data", conn)
-
-# df = pd.read_csv('../data/lucjan_data.csv',  parse_dates=[0])
 
 start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
 today_df = df[df['date']>start_of_today]
