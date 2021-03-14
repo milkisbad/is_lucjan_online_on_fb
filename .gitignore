@@ -8,3 +8,4 @@ dist/
 build/
 data/
 *config.json
+*db_credentials.json
