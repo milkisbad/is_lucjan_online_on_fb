@@ -12,19 +12,11 @@ import datetime
 import json
 import mariadb
 
+from dash.dependencies import Input, Output
+
 def load_db_credentials(json_path='db_credentails.json'):
     with open('db_credentials.json') as f:
         return json.load(f)
-
-def wakeup(df):
-    for _, row in df.iterrows():
-        if row['is_online']:
-            return f'Lucjan has woken up at {str(row["date"].strftime("%H:%M"))} today'
-            break
-    return 'not on fb today, smart boi'
-
-def time_online(df):
-    return "Online today for " + (pd.Timedelta(f'{df["is_online"].sum()}m')+ pd.Timestamp("00:00:00")).strftime("%H:%M") + " hours total"
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -32,40 +24,61 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 db_credentials = load_db_credentials()
 
-conn = mariadb.connect(**db_credentials)
-df = pd.read_sql("SELECT * FROM lucjan_data", conn)
+@app.callback(
+    Output('memory', 'data'),
+    Output('memory_today', 'data'),
+    Input(component_id="interval-component", component_property="n_intervals")
+)
+def update_data(n_intervals):
+    conn = mariadb.connect(**db_credentials)
+    data = pd.read_sql("SELECT * FROM lucjan_data", conn)
+    start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
+    today_data = pd.read_sql(f"SELECT * FROM lucjan_data WHERE date > '{start_of_today}'", conn)
+    conn.close()
+    return data.to_dict(), today_data.to_dict()
 
-start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
-today_df = df[df['date']>start_of_today]
+@app.callback(Output('timeseries_graph', 'figure'), [Input('interval-component', 'n_intervals'), Input('memory', 'data')])
+def timeseries_graph_update(n, data):
+    fig = px.line(data, x="date", y="is_online", hover_name="date", render_mode="svg")
+    fig.update_layout(uirevision='constant')
+    return fig
 
-fig = px.line(df, x="date", y="is_online", hover_name="date", render_mode="svg")
-pie = px.pie(df, names='is_online', title='Percentage of time online')
+@app.callback(Output('pie_chart', 'figure'), [Input('interval-component', 'n_intervals'), Input('memory', 'data')])
+def pie_chart(n, data):
+    fig = px.pie(data, names='is_online', title='Percentage of time online')
+    fig.update_layout(uirevision='constant')
+    return fig
 
-wakeup_today = wakeup(today_df)
-time_online_today = time_online(today_df)
+@app.callback(Output('time_online', 'children'), [Input('interval-component', 'n_intervals'), Input('memory_today', 'data')])
+def time_online(n, today_data):
+    df = pd.DataFrame.from_dict(today_data)
+    return "Online today for " + (pd.Timedelta(f'{df["is_online"].sum()}m')+ pd.Timestamp("00:00:00")).strftime("%H:%M") + " hours total"
+
+@app.callback(Output('wakeup_time', 'children'), [Input('interval-component', 'n_intervals'), Input('memory_today', 'data')])
+def wakeup(n, today_data):
+    df = pd.DataFrame(today_data).astype({'date': 'datetime64', 'is_online': 'bool'})
+    for _, row in df.iterrows():
+        if row['is_online']:
+            return f'Lucjan has woken up at {str(row["date"].strftime("%H:%M"))} today'
+            break
+    return 'not on fb today, smart boi'
 
 app.layout = html.Div(children=[
     html.H1(children='Is Lucjan online?', style={'textAlign': 'center'}),
 
-    html.Div(children=f'{wakeup_today}', style={
-        'textAlign': 'center'
-    }),
+    html.Div(id='time_online'),
+    html.Div(id='wakeup_time'),
 
-    html.Div(children=f'{time_online_today}', style={
-        'textAlign': 'center'
-    }),
+    dcc.Graph(id='pie_chart'),
+    dcc.Graph(id='timeseries_graph'),
 
-    dcc.Graph(
-        id='histogram',
-        figure=pie
+    dcc.Interval(
+        id='interval-component',
+        interval=1*60000, # in milliseconds
+        n_intervals=0
     ),
-
-    dcc.Graph(
-        id='timeseries',
-        figure=fig
-    )
-
-
+    dcc.Store(id='memory'),
+    dcc.Store(id='memory_today')
 ])
 
 
