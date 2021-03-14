@@ -37,25 +37,25 @@ def update_data(n_intervals):
     conn.close()
     return data.to_dict(), today_data.to_dict()
 
-@app.callback(Output('timeseries_graph', 'figure'), [Input('interval-component', 'n_intervals'), Input('memory', 'data')])
-def timeseries_graph_update(n, data):
+@app.callback(Output('timeseries_graph', 'figure'), Input('memory', 'data'))
+def timeseries_graph_update(data):
     fig = px.line(data, x="date", y="is_online", hover_name="date", render_mode="svg")
     fig.update_layout(uirevision='constant')
     return fig
 
-@app.callback(Output('pie_chart', 'figure'), [Input('interval-component', 'n_intervals'), Input('memory', 'data')])
-def pie_chart(n, data):
+@app.callback(Output('pie_chart', 'figure'), Input('memory', 'data'))
+def pie_chart(data):
     fig = px.pie(data, names='is_online', title='Percentage of time online')
     fig.update_layout(uirevision='constant')
     return fig
 
-@app.callback(Output('time_online', 'children'), [Input('interval-component', 'n_intervals'), Input('memory_today', 'data')])
-def time_online(n, today_data):
+@app.callback(Output('time_online', 'children'), Input('memory_today', 'data'))
+def time_online(today_data):
     df = pd.DataFrame.from_dict(today_data)
     return "Online today for " + (pd.Timedelta(f'{df["is_online"].sum()}m')+ pd.Timestamp("00:00:00")).strftime("%H:%M") + " hours total"
 
-@app.callback(Output('wakeup_time', 'children'), [Input('interval-component', 'n_intervals'), Input('memory_today', 'data')])
-def wakeup(n, today_data):
+@app.callback(Output('wakeup_time', 'children'), Input('memory_today', 'data'))
+def wakeup(today_data):
     df = pd.DataFrame(today_data).astype({'date': 'datetime64', 'is_online': 'bool'})
     for _, row in df.iterrows():
         if row['is_online']:
