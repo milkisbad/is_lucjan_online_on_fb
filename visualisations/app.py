@@ -29,9 +29,10 @@ db_credentials = load_db_credentials()
     Output('memory_today', 'data'),
     Input(component_id="interval-component", component_property="n_intervals")
 )
-def update_data(n_intervals):
+def update_data(days_ago=2):
     conn = mariadb.connect(**db_credentials)
-    data = pd.read_sql("SELECT * FROM lucjan_data", conn)
+    start_of_yday = (datetime.datetime.today() - datetime.timedelta(days=days_ago)).strftime('%Y-%m-%d')
+    data = pd.read_sql(f"SELECT * FROM lucjan_data WHERE date > '{start_of_yday}'", conn)
     start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
     today_data = pd.read_sql(f"SELECT * FROM lucjan_data WHERE date > '{start_of_today}'", conn)
     conn.close()
