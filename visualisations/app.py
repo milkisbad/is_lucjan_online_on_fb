@@ -16,7 +16,7 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
 
-def load_db_credentials(json_path='db_credentails.json'):
+def load_db_credentials(json_path='db_credentials.json'):
     with open(json_path) as f:
         return json.load(f)
 
@@ -24,7 +24,6 @@ def load_db_credentials(json_path='db_credentails.json'):
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-# app = dash.Dash(__name__)
 
 db_credentials = load_db_credentials()
 
