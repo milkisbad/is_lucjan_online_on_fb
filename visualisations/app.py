@@ -32,7 +32,9 @@ daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
 conn1.close()
 
 wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title='Wakeup time by weekday')
+wakeup_time_boxplot.update_layout(title_x=.5)
 time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday')
+time_online_boxplot.update_layout(title_x=.5)
 
 @app.callback(
     Output('memory', 'data'),
@@ -51,8 +53,8 @@ def update_data(_, days_ago=2):
 
 @app.callback(Output('timeseries_graph', 'figure'), Input('memory', 'data'))
 def timeseries_graph_update(data):
-    fig = px.line(data, x="date", y="is_online", hover_name="date", render_mode="svg")
-    fig.update_layout(uirevision='constant')
+    fig = px.line(data, x="date", y="is_online", hover_name="date", render_mode="svg", title='Is online timeseries')
+    fig.update_layout(uirevision='constant', title_x=.5)
     return fig
 
 
@@ -87,16 +89,13 @@ def wakeup(today_data):
 
 app.layout = html.Div(children=[
     html.H1(children='Is Lucjan online?', style={'textAlign': 'center'}),
+    html.Label(id='time_online', style={'textAlign': 'center'}),
+    html.Label(id='wakeup_time', style={'textAlign': 'center'}),
 
     html.Div([
-        html.Div([
-            html.Label(id='time_online'),
-            html.Label(id='wakeup_time')], className='six columns'),
-        html.Div(dcc.Graph(id='pie_chart', style={'Width': '50%'}), className='six columns')], className='row'),
-
-    html.Div([
-        dcc.Graph(id='wakeup_time_boxplot', figure=wakeup_time_boxplot, className='six columns'),
-        dcc.Graph(id='time_online_boxplot', figure=time_online_boxplot, className='six columns')
+        dcc.Graph(id='wakeup_time_boxplot', figure=wakeup_time_boxplot, className='four columns'),
+        dcc.Graph(id='time_online_boxplot', figure=time_online_boxplot, className='four columns'),
+        html.Div(dcc.Graph(id='pie_chart'), className='four columns')
     ], className='row'),
 
     dcc.Graph(id='timeseries_graph'),
