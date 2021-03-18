@@ -31,8 +31,8 @@ conn1 = mariadb.connect(**db_credentials)
 daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
 conn1.close()
 
-wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time')
-time_online_boxplot = px.box(daily_df, x='day_name', y='online_today')
+wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title='Wakeup time by weekday')
+time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday')
 
 @app.callback(
     Output('memory', 'data'),
