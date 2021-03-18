@@ -27,6 +27,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 db_credentials = load_db_credentials()
 
+conn1 = mariadb.connect(**db_credentials)
+daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
+conn1.close()
+
+wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time')
+time_online_boxplot = px.box(daily_df, x='day_name', y='online_today')
 
 @app.callback(
     Output('memory', 'data'),
@@ -87,6 +93,12 @@ app.layout = html.Div(children=[
             html.Label(id='time_online'),
             html.Label(id='wakeup_time')], className='six columns'),
         html.Div(dcc.Graph(id='pie_chart', style={'Width': '50%'}), className='six columns')], className='row'),
+
+    html.Div([
+        dcc.Graph(id='wakeup_time_boxplot', figure=wakeup_time_boxplot, className='six columns'),
+        dcc.Graph(id='time_online_boxplot', figure=time_online_boxplot, className='six columns')
+    ], className='row'),
+
     dcc.Graph(id='timeseries_graph'),
 
     dcc.Interval(
