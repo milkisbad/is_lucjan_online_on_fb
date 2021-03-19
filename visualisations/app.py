@@ -31,6 +31,10 @@ conn1 = mariadb.connect(**db_credentials)
 daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
 conn1.close()
 
+# daily_df.loc[5:6, ['wakeup_time', 'online_today']] = None
+daily_df['wakeup_time'] = daily_df['wakeup_time'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime('1970/01/01')
+daily_df['online_today'] = daily_df['online_today'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime('1970/01/01')
+
 wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title='Wakeup time by weekday')
 wakeup_time_boxplot.update_layout(title_x=.5)
 time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday')
