@@ -57,7 +57,10 @@ def update_data(_, days_ago=2):
 
 @app.callback(Output('timeseries_graph', 'figure'), Input('memory', 'data'))
 def timeseries_graph_update(data):
-    fig = px.line(data, x="date", y="is_online", hover_name="date", render_mode="svg", title='Is online timeseries')
+    df = pd.DataFrame(data).astype({'date': 'datetime64', 'is_online': 'bool'})
+    df.index = df.date
+    df = df.rolling('1h').mean().reset_index()
+    fig = px.line(df, x="date", y="is_online", hover_name="date", render_mode="svg", title='Hourly mean of lucjan being online')
     fig.update_layout(uirevision='constant', title_x=.5)
     return fig
 
