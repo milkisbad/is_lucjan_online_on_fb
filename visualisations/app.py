@@ -31,14 +31,19 @@ conn1 = mariadb.connect(**db_credentials)
 daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
 conn1.close()
 
-# daily_df.loc[5:6, ['wakeup_time', 'online_today']] = None
-daily_df['wakeup_time'] = daily_df['wakeup_time'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime('1970/01/01')
-daily_df['online_today'] = daily_df['online_today'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime('1970/01/01')
+daily_df['wakeup_time'] = daily_df['wakeup_time'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime(
+    '1970/01/01')
+daily_df['online_today'] = daily_df['online_today'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime(
+    '1970/01/01')
 
-wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title='Wakeup time by weekday')
+day_order = {'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
+wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title=f'Wakeup time by weekday',
+                             category_orders=day_order)
 wakeup_time_boxplot.update_layout(title_x=.5)
-time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday')
+time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday',
+                             category_orders=day_order)
 time_online_boxplot.update_layout(title_x=.5)
+
 
 @app.callback(
     Output('memory', 'data'),
@@ -60,7 +65,8 @@ def timeseries_graph_update(data):
     df = pd.DataFrame(data).astype({'date': 'datetime64', 'is_online': 'bool'})
     df.index = df.date
     df = df.rolling('1h').mean().reset_index()
-    fig = px.line(df, x="date", y="is_online", hover_name="date", render_mode="svg", title='Hourly mean of lucjan being online')
+    fig = px.line(df, x="date", y="is_online", hover_name="date", render_mode="svg",
+                  title='Hourly mean of lucjan being online')
     fig.update_layout(uirevision='constant', title_x=.5)
     return fig
 
