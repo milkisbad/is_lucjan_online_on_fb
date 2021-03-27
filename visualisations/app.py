@@ -37,11 +37,12 @@ daily_df['online_today'] = daily_df['online_today'].round().apply(pd.to_timedelt
     '1970/01/01')
 
 day_order = {'day_name': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
+h24_on_plots = (pd.to_datetime('1970/01/01'), pd.to_datetime('1970/01/02'))
 wakeup_time_boxplot = px.box(daily_df, x='day_name', y='wakeup_time', title=f'Wakeup time by weekday',
-                             category_orders=day_order)
+                             category_orders=day_order, range_y=h24_on_plots)
 wakeup_time_boxplot.update_layout(title_x=.5)
 time_online_boxplot = px.box(daily_df, x='day_name', y='online_today', title='Time online by weekday',
-                             category_orders=day_order)
+                             category_orders=day_order, range_y=h24_on_plots)
 time_online_boxplot.update_layout(title_x=.5)
 
 
