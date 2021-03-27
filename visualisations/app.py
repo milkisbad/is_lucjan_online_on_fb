@@ -31,6 +31,7 @@ conn1 = mariadb.connect(**db_credentials)
 daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
 conn1.close()
 
+# daily_df.loc[4:5, ['wakeup_time', 'online_today']] = None
 daily_df['wakeup_time'] = daily_df['wakeup_time'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime(
     '1970/01/01')
 daily_df['online_today'] = daily_df['online_today'].round().apply(pd.to_timedelta, unit='s') + pd.to_datetime(
