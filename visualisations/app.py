@@ -97,8 +97,9 @@ def time_online(today_data):
 def wakeup(today_data):
     df = pd.DataFrame(today_data).astype({'date': 'datetime64', 'is_online': 'bool'})
     for _, row in df.iterrows():
-        if row['is_online']:
-            return f'Wake up time {str(row["date"].strftime("%H:%M"))} '
+        s_passed = pd.Timedelta(row['date'].strftime('%H:%M:%S')).seconds
+        if row['is_online'] and s_passed > 4*3600:
+            return f'Wake up time {row["date"].strftime("%H:%M")} '
     return 'not on fb today, smart boi'
 
 
