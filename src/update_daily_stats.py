@@ -19,6 +19,9 @@ def online_today(df):
 
 
 def take_last_day_and_calculate_daily_stats():
+    start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
+    start_of_yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
     conn = mariadb.connect(**db_credentials)
 
     last_day_df = pd.read_sql(
@@ -34,6 +37,4 @@ def take_last_day_and_calculate_daily_stats():
 
 
 if __name__ == "__main__":
-    start_of_today = datetime.datetime.today().strftime('%Y-%m-%d')
-    start_of_yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     take_last_day_and_calculate_daily_stats()

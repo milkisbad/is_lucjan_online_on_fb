@@ -31,7 +31,7 @@ setup(
   entry_points={
     'console_scripts': [
       'facebook-online-friend-tracker=src:main',
-      'update_daily_stats_lucjan=src:update_daily_stats'
+      'update_daily_stats_lucjan=src:take_last_day_and_calculate_daily_stats'
     ],
   },
 )
