@@ -1,9 +1,13 @@
 import json
 import mariadb
+import os
 import datetime
 import pandas as pd
 
-with open('../db_credentials.json') as f:
+dirname = os.path.dirname(__file__)
+filename = os.path.join(dirname, '../db_credentials.json')
+
+with open(filename) as f:
     db_credentials = json.load(f)
 
 
