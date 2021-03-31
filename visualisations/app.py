@@ -28,7 +28,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 db_credentials = load_db_credentials()
 
 conn1 = mariadb.connect(**db_credentials)
-daily_df = pd.read_sql(f"SELECT * FROM daily_stats", conn1)
+daily_df = pd.read_sql(f"SELECT * FROM daily_stats_1", conn1)
 conn1.close()
 
 # daily_df.loc[4:5, ['wakeup_time', 'online_today']] = None
