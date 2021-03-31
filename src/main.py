@@ -44,7 +44,7 @@ except NameError:
 
 def main():
   # load config
-  config = json.load(open('./config.json'))
+  config = json.load(open('../config.json'))
   print(config)
   # Prompt user for Facebook credentials.
   print('\nFacebook Online Friend Tracker starting...')
@@ -105,3 +105,6 @@ def main():
 
     # Wait for next interval and increment iteration counter.
     time.sleep(interval_time - SLEEP - (1-found_online)*IMPLICIT_WAIT)
+
+if __name__ == '__main__':
+    main()
